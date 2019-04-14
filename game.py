@@ -166,3 +166,5 @@ class Game:
 
         # call self.chess. something
         self.chess.play_turn()
+        # draw pieces on the chess board
+        self.chess.draw_pieces()

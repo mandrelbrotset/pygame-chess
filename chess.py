@@ -1,189 +1,120 @@
-import os
 import pygame
 from pygame.locals import *
-from piece import Piece
 import random
 
-class Chess:
-    def __init__(self):
-        # screen dimensions
-        screen_width = 640
-        screen_height = 750
-        # flag to know if game menu has been showed
-        self.menu_showed = False
-        # flag to set game loop
-        self.running = True
-        # base folder for program resources
-        self.resources = "res"
- 
-        # initialize game window
-        pygame.display.init()
-        # initialize font for text
-        pygame.font.init()
+from piece import Piece
+from utils import Utils
 
-        # create game window
-        self.screen = pygame.display.set_mode([screen_width, screen_height])
-        # background color
-        bg_color = (255, 255, 255)
-        # set background color
-        self.screen.fill(bg_color)
-
-        # title of window
-        window_title = "Chess"
-        # set window caption
-        pygame.display.set_caption(window_title)
-
-        # get location of game icon
-        icon_src = os.path.join(self.resources, "chess_icon.png")
-        # load game icon
-        icon = pygame.image.load(icon_src)
-        # set game icon
-        pygame.display.set_icon(icon)
-        # update display
-        pygame.display.flip()
-        # set game clock
-        self.clock = pygame.time.Clock()
-
-    def start_game(self):
-        """Function containing main game loop"""
-        # game loop
-        while self.running:
-            self.clock.tick(60)
-            # poll events
-            for event in pygame.event.get():
-                # get keys pressed
-                key_pressed = pygame.key.get_pressed()
-                # check if the game has been closed by the user
-                if event.type == pygame.QUIT or key_pressed[K_ESCAPE]:
-                    # set flag to break out of the game loop
-                    self.running = False
-                # if key_pressed[K_SPACE]:
-                #     self.reset()
-            
-            # if self.menu_showed == False:
-            #     self.menu()
-            # else:
-            #     self.game()
-
-            # mechanics of the game
-            self.game()
-            # update display
-            pygame.display.flip()
-            # update events
-            pygame.event.pump()
-
-        # call method to stop pygame
-        pygame.quit()
-
-    
-    def menu(self):
-        """method to show game menu"""
-        # black color
-        black_color = (0, 0, 0)
-        # coordinates for "Play" button
-        start_btn = pygame.Rect(270, 300, 100, 50)
-        # show play button
-        pygame.draw.rect(self.screen, black_color, start_btn)
-
-        # white color
-        white_color = (255, 255, 255)
-        # create fonts for texts
-        big_font = pygame.font.SysFont("comicsansms", 50)
-        small_font = pygame.font.SysFont("comicsansms", 20)
-        # create text to be shown on the game menu
-        welcome_text = big_font.render("Chess", False, black_color)
-        created_by = small_font.render("Created by Sheriff", True, black_color)
-        start_btn_label = small_font.render("Play", True, white_color)
-        
-        # show welcome text
-        self.screen.blit(welcome_text, 
-                      ((self.screen.get_width() - welcome_text.get_width()) // 2, 
-                      150))
-        # show credit text
-        self.screen.blit(created_by, 
-                      ((self.screen.get_width() - created_by.get_width()) // 2, 
-                      self.screen.get_height() - created_by.get_height() - 100))
-        # show text on the Play button
-        self.screen.blit(start_btn_label, 
-                      ((start_btn.x + (start_btn.width - start_btn_label.get_width()) // 2, 
-                      start_btn.y + (start_btn.height - start_btn_label.get_height()) // 2)))
-
-        # get pressed keys
-        key_pressed = pygame.key.get_pressed()
-        # call function to get mouse event
-        ret, mouse_coords = self.mouse_event()
-
-        # check if "Play" button was clicked
-        if start_btn.collidepoint(mouse_coords[0], mouse_coords[1]):
-            # change button behavior as it is hovered
-            pygame.draw.rect(self.screen, white_color, start_btn, 3)
-            # check if left mouse button was clicked
-            if ret:
-                # change menu flag
-                self.menu_showed = True
-        # check if enter or return key was pressed
-        elif key_pressed[K_RETURN]:
-            self.menu_showed = True
-
-    def game(self):
-        # background color
-        color = (0,0,0)
-        # set backgound color
-        self.screen.fill(color)
-        
-        # chess board offset
-        board_offset_x = 0
-        board_offset_y = 50
-        self.board_dimensions = (board_offset_x, board_offset_y)
-        
-        # get location of chess board image
-        board_src = os.path.join(self.resources, "board.png")
-        # load the chess board image 
-        board_img = pygame.image.load(board_src).convert()
-        # show the chess board
-        self.screen.blit(board_img, self.board_dimensions)
-
-        # get the width of a chess board square
-        width = board_img.get_rect().width // 8
-        # get the height of a chess baord square
-        height = board_img.get_rect().height // 8
-        # initialize list that stores all places to put chess pieces on the board
-        self.board_locations = []
-
-        # getting errors here
-        for x in range(0, 8):
-            self.board_locations.append([])
-            for y in range(0, 8):
-                self.board_locations[x].append([board_offset_x+(x*width), board_offset_y+(y*height)])
-        
-        # get location of image containing the chess pieces
-        pieces_src = os.path.join(self.resources, "pieces.png")
+class Chess(object):
+    def __init__(self, screen, pieces_src, square_coords):
+        # display surface
+        self.screen = screen
         # create an object of class to show chess pieces on the board
-        chess_pieces = Piece(pieces_src, cols=6, rows=2)
+        self.chess_pieces = Piece(pieces_src, cols=6, rows=2)
+        # store coordinates of the chess board squares
+        self.board_locations = square_coords
 
-        # show chess pieces on the board
-        for i in range(0, 8):
-            for j in range(0, 8):
-                # pick a random chess piece
-                y = random.randint(0, 6)
-                # call method to draw a chess piece on the board
-                chess_pieces.draw(self.screen, y, self.board_locations[i][j])
+        self.turn = {"player_one": 0,
+                     "player_two": 0}
+        
+        self.pieces = {
+            "white_pawn":   5,
+            "white_knight": 3,
+            "white_bishop": 2,
+            "white_rook":   4,
+            "white_king":   0,
+            "white_queen":  1,
+            "black_pawn":   11,
+            "black_knight": 9,
+            "black_bishop": 8,
+            "black_rook":   10,
+            "black_king":   6,
+            "black_queen":  7
+        }
 
+        self.reset()
+    
+    def reset(self):
+        x = random.randint(0, 1)
+        if(x == 1):
+            self.turn["player_one"] = 1
+        elif(x == 0):
+            self.turn["player_two"] = 1
+
+        # reset the board
+        self.piece_location = {}
+        for i in range(97, 105):
+            x = 8
+            self.piece_location[chr(i)] = {}
+            while x>0:
+                if(x==8):
+                    if(chr(i)=='a' or chr(i)=='h'):
+                        self.piece_location[chr(i)][x] = "black_pawn"
+                    elif(chr(i)=='b' or chr(i)=='g'):
+                        self.piece_location[chr(i)][x] = "black_knight"
+                    elif(chr(i)=='c' or chr(i)=='f'):
+                        self.piece_location[chr(i)][x] = "black_bishop"
+                    elif(chr(i)=='d'):
+                        self.piece_location[chr(i)][x] = "black_queen"
+                    elif(chr(i)=='e'):
+                        self.piece_location[chr(i)][x] = "black_king"
+                elif(x==7):
+                    self.piece_location[chr(i)][x] = "black_pawn"
+                elif(x==2):
+                    self.piece_location[chr(i)][x] = "white_pawn"
+                elif(x==1):
+                    if(chr(i)=='a' or chr(i)=='h'):
+                        self.piece_location[chr(i)][x] = "white_pawn"
+                    elif(chr(i)=='b' or chr(i)=='g'):
+                        self.piece_location[chr(i)][x] = "white_knight"
+                    elif(chr(i)=='c' or chr(i)=='f'):
+                        self.piece_location[chr(i)][x] = "white_bishop"
+                    elif(chr(i)=='d'):
+                        self.piece_location[chr(i)][x] = "white_queen"
+                    elif(chr(i)=='e'):
+                        self.piece_location[chr(i)][x] = "white_king"
+                else:
+                    self.piece_location[chr(i)][x] = ""
+                x = x - 1
+
+        print(self.piece_location)
+
+    def play_turn(self):
         # put white on 
-        # coords = self.board_locations[i][j]
+        coords = self.board_locations[2][5]
         # x = pygame.Rect(coords[0], coords[1], 81, 81)
         # pygame.draw.rect(self.screen, (255,255,255), x, 0)
 
-    def mouse_event(self):
-        # get coordinates of the mouse
-        position = pygame.mouse.get_pos()
-        # create flag to check for left click event
-        left_click = False
-        # store mouse buttons
-        mouse_btn = pygame.mouse.get_pressed()
-        # check if left mouse button was pressed
-        if mouse_btn[0]:
-            # change left click flag
-            left_click = True
-        # return left click status and mouse coordinates
-        return left_click, position
+        transparent_green = (0,194,39,170)
+        transparent_blue = (28,21,212,170)
+
+        s = pygame.Surface((81,81), pygame.SRCALPHA)   # per-pixel alpha
+        #s.fill(transparent_red)                         # notice the alpha value in the color
+        s.fill(transparent_green)
+        #self.screen.blit(s, (coords[0], coords[1]))
+
+        s.fill(transparent_blue)
+        coords = self.board_locations[5][5]
+        #self.screen.blit(s, (coords[0], coords[1]))
+
+    def draw_pieces(self):
+        x = 0
+        y = 0
+        for val in self.piece_location.values():
+            for value in val.values() :
+                if(len(value) > 1):
+                    self.chess_pieces.draw(self.screen, value, self.board_locations[x][y])
+                y = y + 1
+            x = x + 1
+            if(x>7):
+                x = 0
+            if(y>7):
+                y=0
+
+    def move_piece(self):
+        utils = Utils()
+        mouse_event = utils.get_mouse_event()
+
+
+
+        
