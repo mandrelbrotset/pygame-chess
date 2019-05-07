@@ -113,33 +113,104 @@ class Chess(object):
         transparent_blue = (28,21,212,170)
 
         # create a transparent surface
-        surface = pygame.Surface((81,81), pygame.SRCALPHA)
+        surface = pygame.Surface((self.square_length, self.square_length), pygame.SRCALPHA)
         surface.fill(transparent_green)
 
-        surface1 = pygame.Surface((81,81), pygame.SRCALPHA)
+        surface1 = pygame.Surface((self.square_length, self.square_length), pygame.SRCALPHA)
         surface1.fill(transparent_blue)
-
-        #self.screen.blit(s, (coords[0], coords[1]))
 
         for val in self.piece_location.values():
             for value in val.values() :
+                # if there is a piece on the 
                 if(len(value[0]) > 1):
                     piece_name = value[0]
                     piece_coord_x = value[2][0]
                     piece_coord_y = value[2][1]
 
-                    # 
+                    # change background color of piece if it is selected
                     if value[1] and len(value[0]) > 5:
+                        moves = self.possible_moves(piece_name, (piece_coord_x, piece_coord_y))
+
                         if value[0][:5] == "black":
                             self.screen.blit(surface, self.board_locations[piece_coord_x][piece_coord_y])
+                            if len(moves) > 0:
+                                for move in moves:
+                                    x_coord = move[0]
+                                    y_coord = move[1]
+                                    if x_coord >= 0 and y_coord >= 0:
+                                        self.screen.blit(surface, self.board_locations[x_coord][y_coord])
                         elif value[0][:5] == "white":
                             self.screen.blit(surface1, self.board_locations[piece_coord_x][piece_coord_y])
+                            if len(moves) > 0:
+                                for move in moves:
+                                    x_coord = move[0]
+                                    y_coord = move[1]
+                                    if x_coord >= 0 and y_coord >= 0:
+                                        self.screen.blit(surface1, self.board_locations[x_coord][y_coord])
 
                     self.chess_pieces.draw(self.screen, piece_name, 
                                             self.board_locations[piece_coord_x][piece_coord_y])
 
-    def possible_moves(self):
-        pass
+    def possible_moves(self, piece_name, piece_coord):
+        # list to store possible moves of the selected piece
+        positions = []
+        # possible
+        if len(piece_name) > 0:
+            # calculate moves for bishop
+            if piece_name[6:] == "bishop":
+                a, b = piece_coord
+                while(a > 0 and b < 8):
+                    a = a - 1
+                    b = b - 1
+                    positions.append([a,b])
+                a, b = piece_coord
+                while(a < 7 and b < 7):
+                    a = a + 1
+                    b = b + 1
+                    positions.append([a,b])
+                a, b = piece_coord
+                while(a > 0 and b < 7):
+                    a = a - 1
+                    b = b + 1
+                    positions.append([a,b])
+                a, b = piece_coord
+                while(a < 7 and b > 0):
+                    a = a + 1
+                    b = b - 1
+                    positions.append([a,b])
+                
+                #print("before", positions)
+
+                # fix bug
+                # remove positions that have been occupied by other pieces
+                """
+                for item in self.piece_location.values():
+                    for value in item.values():
+                        # if the selected piece is for the current player
+                        #if(value[0][:5] == piece_name[:5]):
+                        print("to remove", value[2])
+                        try:
+                            positions.remove((value[2][0], value[2][1]))
+                        except:
+                            pass
+                #print("after", positions)
+                """
+
+            # calculate moves for pawn
+            elif piece_name[6:] == "pawn":
+                pass
+            # calculate movs for knight
+            elif piece_name[6:] == "knight":
+                pass
+            # calculate movs for king
+            elif piece_name[6:] == "king":
+                pass
+            # calculate movs for queen
+            elif piece_name[6:] == "queen":
+                pass
+
+        return positions
+
 
     def move_piece(self):
         utils = Utils()
