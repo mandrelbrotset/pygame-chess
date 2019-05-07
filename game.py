@@ -58,9 +58,8 @@ class Game:
         self.board_img = pygame.image.load(board_src).convert()
 
         # get the width of a chess board square
-        width = self.board_img.get_rect().width // 8
-        # get the height of a chess baord square
-        height = self.board_img.get_rect().height // 8
+        square_length = self.board_img.get_rect().width // 8
+
         # initialize list that stores all places to put chess pieces on the board
         self.board_locations = []
 
@@ -68,12 +67,16 @@ class Game:
         for x in range(0, 8):
             self.board_locations.append([])
             for y in range(0, 8):
-                self.board_locations[x].append([self.board_offset_x+(x*width), self.board_offset_y+(y*height)])
+                self.board_locations[x].append([self.board_offset_x+(x*square_length), 
+                                                self.board_offset_y+(y*square_length)])
+
+        #for i in self.board_locations:
+        #    print(i)
 
         # get location of image containing the chess pieces
         pieces_src = os.path.join(self.resources, "pieces.png")
         # create class object that handles the gameplay logic
-        self.chess = Chess(self.screen, pieces_src, self.board_locations)
+        self.chess = Chess(self.screen, pieces_src, self.board_locations, square_length)
 
         # game loop
         while self.running:
@@ -168,3 +171,5 @@ class Game:
         self.chess.play_turn()
         # draw pieces on the chess board
         self.chess.draw_pieces()
+        # 
+        self.chess.move_piece()

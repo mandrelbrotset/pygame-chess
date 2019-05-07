@@ -1,5 +1,5 @@
-from chess import Chess
+from game import Game
 
 if __name__=="__main__":
-    game = Chess()
+    game = Game()
     game.start_game()
