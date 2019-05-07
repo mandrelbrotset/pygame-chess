@@ -196,8 +196,7 @@ class Chess(object):
 
             # calculate moves for pawn
             elif piece_name[6:] == "pawn":
-                x_coord = piece_coord[0]
-                y_coord = piece_coord[1]
+                x_coord, y_coord = piece_coord
 
                 if piece_name[:5] == "black":
                     if y_coord + 1 < 8:
@@ -216,7 +215,32 @@ class Chess(object):
 
             # calculate movs for knight
             elif piece_name[6:] == "knight":
-                pass
+                x_coord, y_coord = piece_coord
+                # left positions
+                if(x_coord - 2) >= 0:
+                    if(y_coord - 1) >= 0:
+                        positions.append([x_coord-2, y_coord-1])
+                    if(y_coord + 1) < 8:
+                        positions.append([x_coord-2, y_coord+1])
+                # top positions
+                if(y_coord - 2) >= 0:
+                    if(x_coord - 1) >= 0:
+                        positions.append([x_coord-1, y_coord-2])
+                    if(x_coord + 1) < 8:
+                        positions.append([x_coord+1, y_coord-2])
+                # right positions
+                if(x_coord + 2) < 8:
+                    if(y_coord - 1) >= 0:
+                        positions.append([x_coord+2, y_coord-1])
+                    if(y_coord + 1) < 8:
+                        positions.append([x_coord+2, y_coord+1])
+                # bottom positions
+                if(y_coord + 2) < 8:
+                    if(x_coord - 1) >= 0:
+                        positions.append([x_coord-1, y_coord+2])
+                    if(x_coord + 1) < 8:
+                        positions.append([x_coord+1, y_coord+2])
+
             # calculate movs for king
             elif piece_name[6:] == "king":
                 pass
