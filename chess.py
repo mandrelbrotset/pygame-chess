@@ -154,7 +154,7 @@ class Chess(object):
     def possible_moves(self, piece_name, piece_coord):
         # list to store possible moves of the selected piece
         positions = []
-        # possible
+        # find the possible locations to put a piece
         if len(piece_name) > 0:
             # calculate moves for bishop
             if piece_name[6:] == "bishop":
@@ -179,8 +179,6 @@ class Chess(object):
                     b = b - 1
                     positions.append([a,b])
                 
-                #print("before", positions)
-
                 # fix bug
                 # remove positions that have been occupied by other pieces
                 """
@@ -198,7 +196,24 @@ class Chess(object):
 
             # calculate moves for pawn
             elif piece_name[6:] == "pawn":
-                pass
+                x_coord = piece_coord[0]
+                y_coord = piece_coord[1]
+
+                if piece_name[:5] == "black":
+                    if y_coord + 1 < 8:
+                        positions.append([x_coord, y_coord+1])
+                        # black pawns can move two positions ahead for first move
+                        if y_coord < 2:
+                            positions.append([x_coord, y_coord+2])
+                    
+                        
+                elif piece_name[:5] == "white":
+                    if y_coord - 1 >= 0:
+                        positions.append([x_coord, y_coord-1])
+                        # black pawns can move two positions ahead for first move
+                        if y_coord > 5:
+                            positions.append([x_coord, y_coord-2])
+
             # calculate movs for knight
             elif piece_name[6:] == "knight":
                 pass
