@@ -52,7 +52,7 @@ class Chess(object):
             self.piece_location[chr(i)] = {}
             while a>0:
                 # [piece name, currently selected, board coordinates]
-                self.piece_location[chr(i)][a] = ["", False, (x,y)]
+                self.piece_location[chr(i)][a] = ["", False, [x,y]]
                 a = a - 1
                 y = y + 1
             x = x + 1
@@ -121,33 +121,43 @@ class Chess(object):
 
         for val in self.piece_location.values():
             for value in val.values() :
-                # if there is a piece on the 
+                # name of the piece in the current location
+                piece_name = value[0]
+                # x, y coordinates of the current piece
+                piece_coord_x, piece_coord_y = value[2]
+
+                # change background color of piece if it is selected
+                if value[1] and len(value[0]) > 5:
+                    moves = self.possible_moves(piece_name, (piece_coord_x, piece_coord_y))
+
+                    # if the piece selected is a black piece
+                    if value[0][:5] == "black":
+                        self.screen.blit(surface, self.board_locations[piece_coord_x][piece_coord_y])
+                        if len(moves) > 0:
+                            for move in moves:
+                                x_coord = move[0]
+                                y_coord = move[1]
+                                if x_coord >= 0 and y_coord >= 0 and x_coord < 8 and y_coord < 8:
+                                    self.screen.blit(surface, self.board_locations[x_coord][y_coord])
+                    # if the piece selected is a white piece
+                    elif value[0][:5] == "white":
+                        self.screen.blit(surface1, self.board_locations[piece_coord_x][piece_coord_y])
+                        if len(moves) > 0:
+                            for move in moves:
+                                x_coord = move[0]
+                                y_coord = move[1]
+                                if x_coord >= 0 and y_coord >= 0 and x_coord < 8 and y_coord < 8:
+                                    self.screen.blit(surface1, self.board_locations[x_coord][y_coord])
+
+        for val in self.piece_location.values():
+            for value in val.values() :
+                # name of the piece in the current location
+                piece_name = value[0]
+                # x, y coordinates of the current piece
+                piece_coord_x, piece_coord_y = value[2]
+                # check if there is a piece at the square
                 if(len(value[0]) > 1):
-                    piece_name = value[0]
-                    piece_coord_x = value[2][0]
-                    piece_coord_y = value[2][1]
-
-                    # change background color of piece if it is selected
-                    if value[1] and len(value[0]) > 5:
-                        moves = self.possible_moves(piece_name, (piece_coord_x, piece_coord_y))
-
-                        if value[0][:5] == "black":
-                            self.screen.blit(surface, self.board_locations[piece_coord_x][piece_coord_y])
-                            if len(moves) > 0:
-                                for move in moves:
-                                    x_coord = move[0]
-                                    y_coord = move[1]
-                                    if x_coord >= 0 and y_coord >= 0:
-                                        self.screen.blit(surface, self.board_locations[x_coord][y_coord])
-                        elif value[0][:5] == "white":
-                            self.screen.blit(surface1, self.board_locations[piece_coord_x][piece_coord_y])
-                            if len(moves) > 0:
-                                for move in moves:
-                                    x_coord = move[0]
-                                    y_coord = move[1]
-                                    if x_coord >= 0 and y_coord >= 0:
-                                        self.screen.blit(surface1, self.board_locations[x_coord][y_coord])
-
+                    # draw piece on the board
                     self.chess_pieces.draw(self.screen, piece_name, 
                                             self.board_locations[piece_coord_x][piece_coord_y])
 
@@ -156,29 +166,54 @@ class Chess(object):
         positions = []
         # find the possible locations to put a piece
         if len(piece_name) > 0:
+            # 
+            x_coord, y_coord = piece_coord
             # calculate moves for bishop
             if piece_name[6:] == "bishop":
-                a, b = piece_coord
-                while(a > 0 and b < 8):
-                    a = a - 1
-                    b = b - 1
-                    positions.append([a,b])
-                a, b = piece_coord
-                while(a < 7 and b < 7):
-                    a = a + 1
-                    b = b + 1
-                    positions.append([a,b])
-                a, b = piece_coord
-                while(a > 0 and b < 7):
-                    a = a - 1
-                    b = b + 1
-                    positions.append([a,b])
-                a, b = piece_coord
-                while(a < 7 and b > 0):
-                    a = a + 1
-                    b = b - 1
-                    positions.append([a,b])
-                
+                # reset x and y coordinate values
+                x, y = x_coord, y_coord
+                # find top left diagonal spots
+                while(True):
+                    x = x - 1
+                    y = y - 1
+                    if(x < 0 or y <= 0):
+                        break
+                    else:
+                        positions.append([x,y])
+
+                # reset x and y coordinate values
+                x, y = x_coord, y_coord
+                # find bottom right diagonal spots
+                while(True):
+                    x = x + 1
+                    y = y + 1
+                    if(x > 8 or y > 8):
+                        break
+                    else:
+                        positions.append([x,y])
+
+                # reset x and y coordinate values
+                x, y = x_coord, y_coord
+                # find bottom left diagonal spots
+                while(True):
+                    x = x - 1
+                    y = y + 1
+                    if (x < 0 or y > 8):
+                        break
+                    else:
+                        positions.append([x,y])
+
+                # reset x and y coordinate values
+                x, y = x_coord, y_coord
+                # find top right diagonal spots
+                while(True):
+                    x = x + 1
+                    y = y - 1
+                    if(x > 8 or y < 0):
+                        break
+                    else:
+                        positions.append([x,y])
+
                 # fix bug
                 # remove positions that have been occupied by other pieces
                 """
@@ -193,19 +228,17 @@ class Chess(object):
                             pass
                 #print("after", positions)
                 """
-
+            
             # calculate moves for pawn
             elif piece_name[6:] == "pawn":
-                x_coord, y_coord = piece_coord
-
+                # calculate moves for white pawn
                 if piece_name[:5] == "black":
                     if y_coord + 1 < 8:
                         positions.append([x_coord, y_coord+1])
                         # black pawns can move two positions ahead for first move
                         if y_coord < 2:
                             positions.append([x_coord, y_coord+2])
-                    
-                        
+                # calculate moves for white pawn
                 elif piece_name[:5] == "white":
                     if y_coord - 1 >= 0:
                         positions.append([x_coord, y_coord-1])
@@ -215,7 +248,6 @@ class Chess(object):
 
             # calculate movs for knight
             elif piece_name[6:] == "knight":
-                x_coord, y_coord = piece_coord
                 # left positions
                 if(x_coord - 2) >= 0:
                     if(y_coord - 1) >= 0:
@@ -243,11 +275,39 @@ class Chess(object):
 
             # calculate movs for king
             elif piece_name[6:] == "king":
-                pass
+                if(y_coord - 1) >= 0:
+                    # top spot
+                    positions.append([x_coord, y_coord-1])
+
+                if(y_coord + 1) < 8:
+                    # bottom spot
+                    positions.append([x_coord, y_coord+1])
+
+                if(x_coord - 1) >= 0:
+                    # left spot
+                    positions.append([x_coord-1, y_coord])
+                    # top left spot
+                    if(y_coord - 1) >= 0:
+                        positions.append([x_coord-1, y_coord-1])
+                    # bottom left spot
+                    if(y_coord + 1) < 8:
+                        positions.append([x_coord-1, y_coord+1])
+                    
+                if(x_coord + 1) < 8:
+                    # right spot
+                    positions.append([x_coord+1, y_coord])
+                    # top right spot
+                    if(y_coord - 1) >= 0:
+                        positions.append([x_coord+1, y_coord-1])
+                    # bottom right spot
+                    if(y_coord + 1) < 8:
+                        positions.append([x_coord+1, y_coord+1])
+                
             # calculate movs for queen
             elif piece_name[6:] == "queen":
                 pass
 
+        # return list containing possible moves for the selected piece
         return positions
 
 
