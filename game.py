@@ -63,15 +63,12 @@ class Game:
         # initialize list that stores all places to put chess pieces on the board
         self.board_locations = []
 
-        # getting errors here
+        # calculate coordinates of the each square on the board
         for x in range(0, 8):
             self.board_locations.append([])
             for y in range(0, 8):
                 self.board_locations[x].append([self.board_offset_x+(x*square_length), 
                                                 self.board_offset_y+(y*square_length)])
-
-        #for i in self.board_locations:
-        #    print(i)
 
         # get location of image containing the chess pieces
         pieces_src = os.path.join(self.resources, "pieces.png")
@@ -92,13 +89,15 @@ class Game:
                 elif key_pressed[K_SPACE]:
                     self.chess.reset()
             
-            # if self.menu_showed == False:
-            #     self.menu()
-            # else:
-            #     self.game()
+            #if self.menu_showed == False:
+            #    self.menu()
+            #else:
+            #    self.game()
 
+            # for testing
             # mechanics of the game
             self.game()
+
             # update display
             pygame.display.flip()
             # update events
@@ -171,5 +170,3 @@ class Game:
         self.chess.play_turn()
         # draw pieces on the chess board
         self.chess.draw_pieces()
-        # 
-        self.chess.move_piece()
