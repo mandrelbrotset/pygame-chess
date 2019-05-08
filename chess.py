@@ -161,10 +161,9 @@ class Chess(object):
                     self.chess_pieces.draw(self.screen, piece_name, 
                                             self.board_locations[piece_coord_x][piece_coord_y])
 
+
     # helper function to find diagonal moves
-    def diagonal_moves(self, piece_coord):
-        # list to store possible moves of the selected piece
-        positions = []
+    def diagonal_moves(self, positions, piece_coord):
         # reset x and y coordinate values
         x, y = piece_coord
         # find top left diagonal spots
@@ -210,6 +209,40 @@ class Chess(object):
                 positions.append([x,y])
 
         return positions
+    
+
+    # helper function to find horizontal and vertical moves
+    def linear_moves(self, positions, piece_coord):
+        # reset x, y coordniate value
+        x, y = piece_coord
+        # horizontal moves to the left
+        while(x > 0):
+            x = x - 1
+            positions.append([x,y])
+
+        # reset x, y coordniate value
+        x, y = piece_coord
+        # horizontal moves to the right
+        while(x < 7):
+            x = x + 1
+            positions.append([x,y])
+
+        # reset x, y coordniate value
+        x, y = piece_coord
+        # vertical moves upwards
+        while(y > 0):
+            y = y - 1
+            positions.append([x,y])
+
+        # reset x, y coordniate value
+        x, y = piece_coord
+        # vertical moves downwards
+        while(y < 7):
+            y = y + 1
+            positions.append([x,y])
+
+        return positions
+
 
     def possible_moves(self, piece_name, piece_coord):
         # list to store possible moves of the selected piece
@@ -220,7 +253,7 @@ class Chess(object):
             x_coord, y_coord = piece_coord
             # calculate moves for bishop
             if piece_name[6:] == "bishop":
-                positions = self.diagonal_moves(piece_coord)
+                positions = self.diagonal_moves(positions, piece_coord)
             
             # calculate moves for pawn
             elif piece_name[6:] == "pawn":
@@ -239,7 +272,12 @@ class Chess(object):
                         if y_coord > 5:
                             positions.append([x_coord, y_coord-2])
 
-            # calculate movs for knight
+            # calculate moves for rook
+            elif piece_name[6:] == "rook":
+                # find linear moves
+                positions = self.linear_moves(positions, piece_coord)
+
+            # calculate moves for knight
             elif piece_name[6:] == "knight":
                 # left positions
                 if(x_coord - 2) >= 0:
@@ -299,33 +337,10 @@ class Chess(object):
             # calculate movs for queen
             elif piece_name[6:] == "queen":
                 # find diagonal positions
-                positions = self.diagonal_moves(piece_coord)
+                positions = self.diagonal_moves(positions, piece_coord)
 
                 # find linear moves
-                # reset x, y coordniate value
-                x, y = piece_coord
-                # linear moves to the left
-                while(x > 0):
-                    x = x - 1
-                    positions.append([x,y])
-                # reset x, y coordniate value
-                x, y = piece_coord
-                # linear moves to the right
-                while(x < 7):
-                    x = x + 1
-                    positions.append([x,y])
-                # reset x, y coordniate value
-                x, y = piece_coord
-                # linear moves upwards
-                while(y > 0):
-                    y = y - 1
-                    positions.append([x,y])
-                # reset x, y coordniate value
-                x, y = piece_coord
-                # linear moves downwards
-                while(y < 7):
-                    y = y + 1
-                    positions.append([x,y])
+                positions = self.linear_moves(positions, piece_coord)
 
         # return list containing possible moves for the selected piece
         return positions
