@@ -16,9 +16,10 @@ class Chess(object):
         # length of the side of a chess board square
         self.square_length = square_length
 
-        self.turn = {"player_one": 0,
-                     "player_two": 0}
+        self.turn = {"black": 0,
+                     "white": 0}
         
+        # mapping of piece names to index of list containing piece coordinates on spritesheet
         self.pieces = {
             "white_pawn":   5,
             "white_knight": 3,
@@ -39,9 +40,9 @@ class Chess(object):
     def reset(self):
         x = random.randint(0, 1)
         if(x == 1):
-            self.turn["player_one"] = 1
+            self.turn["black"] = 1
         elif(x == 0):
-            self.turn["player_two"] = 1
+            self.turn["white"] = 1
 
         # two dimensonal dictionary containing details about each board location
         self.piece_location = {}
@@ -88,26 +89,39 @@ class Chess(object):
                     elif(chr(i)=='e'):
                         self.piece_location[chr(i)][x][0] = "white_king"
                 x = x - 1
-        #print(self.piece_location)
 
+
+    # 
     def play_turn(self):
-        # put white on 
-        coords = self.board_locations[2][5]
-        # x = pygame.Rect(coords[0], coords[1], 81, 81)
-        # pygame.draw.rect(self.screen, (255,255,255), x, 0)
+        # white color
+        white_color = (255, 255, 255)
+        # create fonts for texts
+        small_font = pygame.font.SysFont("comicsansms", 20)
+        # create text to be shown on the game menu
+        if self.turn["black"]:
+            turn_text = small_font.render("Turn: Black", True, white_color)
+        elif self.turn["white"]:
+            turn_text = small_font.render("Turn: White", True, white_color)
+        
+        # show welcome text
+        self.screen.blit(turn_text, 
+                      ((self.screen.get_width() - turn_text.get_width()) // 2,
+                      10))
+        
+        # let player with black piece play
+        if(self.turn["black"]):
+            self.move_piece("black")
+            # give up turn to player with white piece
+            #self.turn["black"] = 0
+            #self.turn["white"] = 1
+        # let player with white piece play
+        elif(self.turn["white"]):
+            self.move_piece("white")
+            # give up turn to player with black piece
+            #self.turn["black"] = 1
+            #self.turn["white"] = 0
 
-        transparent_green = (0,194,39,170)
-        transparent_blue = (28,21,212,170)
-
-        s = pygame.Surface((81,81), pygame.SRCALPHA)   # per-pixel alpha
-        #s.fill(transparent_red)                         # notice the alpha value in the color
-        s.fill(transparent_green)
-        #self.screen.blit(s, (coords[0], coords[1]))
-
-        s.fill(transparent_blue)
-        coords = self.board_locations[5][5]
-        #self.screen.blit(s, (coords[0], coords[1]))
-
+    # method to draw pieces on the chess board
     def draw_pieces(self):
         transparent_green = (0,194,39,170)
         transparent_blue = (28,21,212,170)
@@ -162,88 +176,7 @@ class Chess(object):
                                             self.board_locations[piece_coord_x][piece_coord_y])
 
 
-    # helper function to find diagonal moves
-    def diagonal_moves(self, positions, piece_coord):
-        # reset x and y coordinate values
-        x, y = piece_coord
-        # find top left diagonal spots
-        while(True):
-            x = x - 1
-            y = y - 1
-            if(x < 0 or y <= 0):
-                break
-            else:
-                positions.append([x,y])
-
-        # reset x and y coordinate values
-        x, y = piece_coord
-        # find bottom right diagonal spots
-        while(True):
-            x = x + 1
-            y = y + 1
-            if(x > 8 or y > 8):
-                break
-            else:
-                positions.append([x,y])
-
-        # reset x and y coordinate values
-        x, y = piece_coord
-        # find bottom left diagonal spots
-        while(True):
-            x = x - 1
-            y = y + 1
-            if (x < 0 or y > 8):
-                break
-            else:
-                positions.append([x,y])
-
-        # reset x and y coordinate values
-        x, y = piece_coord
-        # find top right diagonal spots
-        while(True):
-            x = x + 1
-            y = y - 1
-            if(x > 8 or y < 0):
-                break
-            else:
-                positions.append([x,y])
-
-        return positions
-    
-
-    # helper function to find horizontal and vertical moves
-    def linear_moves(self, positions, piece_coord):
-        # reset x, y coordniate value
-        x, y = piece_coord
-        # horizontal moves to the left
-        while(x > 0):
-            x = x - 1
-            positions.append([x,y])
-
-        # reset x, y coordniate value
-        x, y = piece_coord
-        # horizontal moves to the right
-        while(x < 7):
-            x = x + 1
-            positions.append([x,y])
-
-        # reset x, y coordniate value
-        x, y = piece_coord
-        # vertical moves upwards
-        while(y > 0):
-            y = y - 1
-            positions.append([x,y])
-
-        # reset x, y coordniate value
-        x, y = piece_coord
-        # vertical moves downwards
-        while(y < 7):
-            y = y + 1
-            positions.append([x,y])
-
-        return positions
-
-
+    # method to find the possible moves of the selected piece
     def possible_moves(self, piece_name, piece_coord):
         # list to store possible moves of the selected piece
         positions = []
@@ -346,7 +279,7 @@ class Chess(object):
         return positions
 
 
-    def move_piece(self):
+    def move_piece(self, turn):
         utils = Utils()
         ret, mouse_event = utils.get_mouse_event()
 
@@ -375,9 +308,97 @@ class Chess(object):
                                     columnChar = chr(97 + k)
                                     rowNo = 8 - l
                                     print(columnChar, rowNo)
-                                    self.piece_location[columnChar][rowNo][1] = True
+
+                                    piece_color = self.piece_location[columnChar][rowNo][0]
+                                    piece_color = piece_color[:5]
+
+                                    # only the player with the turn gets to play
+                                    if(piece_color == turn):
+                                        self.piece_location[columnChar][rowNo][1] = True
                             except:
                                 pass
+
+
+    # helper function to find diagonal moves
+    def diagonal_moves(self, positions, piece_coord):
+        # reset x and y coordinate values
+        x, y = piece_coord
+        # find top left diagonal spots
+        while(True):
+            x = x - 1
+            y = y - 1
+            if(x < 0 or y <= 0):
+                break
+            else:
+                positions.append([x,y])
+
+        # reset x and y coordinate values
+        x, y = piece_coord
+        # find bottom right diagonal spots
+        while(True):
+            x = x + 1
+            y = y + 1
+            if(x > 8 or y > 8):
+                break
+            else:
+                positions.append([x,y])
+
+        # reset x and y coordinate values
+        x, y = piece_coord
+        # find bottom left diagonal spots
+        while(True):
+            x = x - 1
+            y = y + 1
+            if (x < 0 or y > 8):
+                break
+            else:
+                positions.append([x,y])
+
+        # reset x and y coordinate values
+        x, y = piece_coord
+        # find top right diagonal spots
+        while(True):
+            x = x + 1
+            y = y - 1
+            if(x > 8 or y < 0):
+                break
+            else:
+                positions.append([x,y])
+
+        return positions
+    
+
+    # helper function to find horizontal and vertical moves
+    def linear_moves(self, positions, piece_coord):
+        # reset x, y coordniate value
+        x, y = piece_coord
+        # horizontal moves to the left
+        while(x > 0):
+            x = x - 1
+            positions.append([x,y])
+
+        # reset x, y coordniate value
+        x, y = piece_coord
+        # horizontal moves to the right
+        while(x < 7):
+            x = x + 1
+            positions.append([x,y])
+
+        # reset x, y coordniate value
+        x, y = piece_coord
+        # vertical moves upwards
+        while(y > 0):
+            y = y - 1
+            positions.append([x,y])
+
+        # reset x, y coordniate value
+        x, y = piece_coord
+        # vertical moves downwards
+        while(y < 7):
+            y = y + 1
+            positions.append([x,y])
+
+        return positions
 
 
 # fix bug
