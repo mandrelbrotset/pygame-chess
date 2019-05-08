@@ -161,6 +161,56 @@ class Chess(object):
                     self.chess_pieces.draw(self.screen, piece_name, 
                                             self.board_locations[piece_coord_x][piece_coord_y])
 
+    # helper function to find diagonal moves
+    def diagonal_moves(self, piece_coord):
+        # list to store possible moves of the selected piece
+        positions = []
+        # reset x and y coordinate values
+        x, y = piece_coord
+        # find top left diagonal spots
+        while(True):
+            x = x - 1
+            y = y - 1
+            if(x < 0 or y <= 0):
+                break
+            else:
+                positions.append([x,y])
+
+        # reset x and y coordinate values
+        x, y = piece_coord
+        # find bottom right diagonal spots
+        while(True):
+            x = x + 1
+            y = y + 1
+            if(x > 8 or y > 8):
+                break
+            else:
+                positions.append([x,y])
+
+        # reset x and y coordinate values
+        x, y = piece_coord
+        # find bottom left diagonal spots
+        while(True):
+            x = x - 1
+            y = y + 1
+            if (x < 0 or y > 8):
+                break
+            else:
+                positions.append([x,y])
+
+        # reset x and y coordinate values
+        x, y = piece_coord
+        # find top right diagonal spots
+        while(True):
+            x = x + 1
+            y = y - 1
+            if(x > 8 or y < 0):
+                break
+            else:
+                positions.append([x,y])
+
+        return positions
+
     def possible_moves(self, piece_name, piece_coord):
         # list to store possible moves of the selected piece
         positions = []
@@ -170,64 +220,7 @@ class Chess(object):
             x_coord, y_coord = piece_coord
             # calculate moves for bishop
             if piece_name[6:] == "bishop":
-                # reset x and y coordinate values
-                x, y = x_coord, y_coord
-                # find top left diagonal spots
-                while(True):
-                    x = x - 1
-                    y = y - 1
-                    if(x < 0 or y <= 0):
-                        break
-                    else:
-                        positions.append([x,y])
-
-                # reset x and y coordinate values
-                x, y = x_coord, y_coord
-                # find bottom right diagonal spots
-                while(True):
-                    x = x + 1
-                    y = y + 1
-                    if(x > 8 or y > 8):
-                        break
-                    else:
-                        positions.append([x,y])
-
-                # reset x and y coordinate values
-                x, y = x_coord, y_coord
-                # find bottom left diagonal spots
-                while(True):
-                    x = x - 1
-                    y = y + 1
-                    if (x < 0 or y > 8):
-                        break
-                    else:
-                        positions.append([x,y])
-
-                # reset x and y coordinate values
-                x, y = x_coord, y_coord
-                # find top right diagonal spots
-                while(True):
-                    x = x + 1
-                    y = y - 1
-                    if(x > 8 or y < 0):
-                        break
-                    else:
-                        positions.append([x,y])
-
-                # fix bug
-                # remove positions that have been occupied by other pieces
-                """
-                for item in self.piece_location.values():
-                    for value in item.values():
-                        # if the selected piece is for the current player
-                        #if(value[0][:5] == piece_name[:5]):
-                        print("to remove", value[2])
-                        try:
-                            positions.remove((value[2][0], value[2][1]))
-                        except:
-                            pass
-                #print("after", positions)
-                """
+                positions = self.diagonal_moves(piece_coord)
             
             # calculate moves for pawn
             elif piece_name[6:] == "pawn":
@@ -305,7 +298,34 @@ class Chess(object):
                 
             # calculate movs for queen
             elif piece_name[6:] == "queen":
-                pass
+                # find diagonal positions
+                positions = self.diagonal_moves(piece_coord)
+
+                # find linear moves
+                # reset x, y coordniate value
+                x, y = piece_coord
+                # linear moves to the left
+                while(x > 0):
+                    x = x - 1
+                    positions.append([x,y])
+                # reset x, y coordniate value
+                x, y = piece_coord
+                # linear moves to the right
+                while(x < 7):
+                    x = x + 1
+                    positions.append([x,y])
+                # reset x, y coordniate value
+                x, y = piece_coord
+                # linear moves upwards
+                while(y > 0):
+                    y = y - 1
+                    positions.append([x,y])
+                # reset x, y coordniate value
+                x, y = piece_coord
+                # linear moves downwards
+                while(y < 7):
+                    y = y + 1
+                    positions.append([x,y])
 
         # return list containing possible moves for the selected piece
         return positions
@@ -343,3 +363,19 @@ class Chess(object):
                                     self.piece_location[columnChar][rowNo][1] = True
                             except:
                                 pass
+
+
+# fix bug
+# remove positions that have been occupied by other pieces
+"""
+for item in self.piece_location.values():
+    for value in item.values():
+        # if the selected piece is for the current player
+        #if(value[0][:5] == piece_name[:5]):
+        print("to remove", value[2])
+        try:
+            positions.remove((value[2][0], value[2][1]))
+        except:
+            pass
+#print("after", positions)
+"""
