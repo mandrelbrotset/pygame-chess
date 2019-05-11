@@ -285,7 +285,9 @@ class Chess(object):
                 # find linear moves
                 positions = self.linear_moves(positions, piece_coord)
 
-        if len(piece_name) > 0:
+
+            
+            count = 0
             # remove positions that overlap other pieces
             for pos in positions:
                 x, y = pos
@@ -293,16 +295,22 @@ class Chess(object):
                 # bug here!! Temporary solution
                 # four conditions because possible moves can be out of board range
                 # i.e. > 7 or < 0
-                if(x >= 0 and x < 8 and y >= 0 and y < 8):
-                    columnChar = chr(97 + x)
-                    rowNo = 8 - y
+                #if(x >= 0 and x < 8 and y >= 0 and y < 8):
+                count = count + 1
+                print(count)
 
-                    des_piece_name = self.piece_location[columnChar][rowNo]
+                columnChar = chr(97 + x)
+                rowNo = 8 - y
 
-                    # remove possible moves that overlap pieces of the current player 
-                    if(piece_name[:5] == des_piece_name[:5]):
-                        positions.remove(pos)
+                des_piece_name = self.piece_location[columnChar][rowNo][0]
 
+                # remove possible moves that overlap pieces of the current player 
+                if(piece_name[:5] == des_piece_name[:5]):
+                    print(pos)
+                    positions.remove(pos)
+
+
+        print(positions)
         # return list containing possible moves for the selected piece
         return positions
 
@@ -445,7 +453,7 @@ class Chess(object):
         while(True):
             x = x + 1
             y = y + 1
-            if(x > 8 or y > 8):
+            if(x > 7 or y > 7):
                 break
             else:
                 positions.append([x,y])
@@ -456,7 +464,7 @@ class Chess(object):
         while(True):
             x = x - 1
             y = y + 1
-            if (x < 0 or y > 8):
+            if (x < 0 or y > 7):
                 break
             else:
                 positions.append([x,y])
@@ -467,7 +475,7 @@ class Chess(object):
         while(True):
             x = x + 1
             y = y - 1
-            if(x > 8 or y < 0):
+            if(x > 7 or y < 0):
                 break
             else:
                 positions.append([x,y])
