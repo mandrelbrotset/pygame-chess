@@ -54,6 +54,7 @@ class Chess(object):
             self.turn["white"] = 1
 
         # two dimensonal dictionary containing details about each board location
+        # storage format is [piece_name, currently_selected, x_y_coordinate]
         self.piece_location = {}
         x = 0
         for i in range(97, 105):
@@ -284,11 +285,78 @@ class Chess(object):
                 # find linear moves
                 positions = self.linear_moves(positions, piece_coord)
 
+        if len(piece_name) > 0:
+            # remove positions that overlap other pieces
+            for pos in positions:
+                x, y = pos
+
+                # bug here!! Temporary solution
+                # four conditions because possible moves can be out of board range
+                # i.e. > 7 or < 0
+                if(x >= 0 and x < 8 and y >= 0 and y < 8):
+                    columnChar = chr(97 + x)
+                    rowNo = 8 - y
+
+                    des_piece_name = self.piece_location[columnChar][rowNo]
+
+                    # remove possible moves that overlap pieces of the current player 
+                    if(piece_name[:5] == des_piece_name[:5]):
+                        positions.remove(pos)
+
         # return list containing possible moves for the selected piece
         return positions
 
 
     def move_piece(self, turn):
+        #
+        square = self.get_selected_square()
+
+        # if a square was selected
+        if square:
+            # get name of piece on the selected square
+            piece_name = square[0]
+            # color of piece on the selected square
+            piece_color = piece_name[:5]
+            # board column character
+            columnChar = square[1]
+            # board row number
+            rowNo = square[2]
+
+            # get x, y coordinates
+            x, y = self.piece_location[columnChar][rowNo][2]
+
+            # if there's a piece on the selected square
+            if len(piece_name) > 0:
+                # find possible moves for thr piece
+                self.moves = self.possible_moves(piece_name, [x,y])
+
+            # only the player with the turn gets to play
+            if(piece_color == turn):
+                # change selection flag from all other pieces
+                for k in self.piece_location.keys():
+                    for key in self.piece_location[k].keys():
+                        self.piece_location[k][key][1] = False
+
+                # change selection flag of the selected piece
+                self.piece_location[columnChar][rowNo][1] = True
+
+            # if empty square is selected
+            elif(len(piece_name) == 0):
+                # move piece if destination is in list of possible moves
+                try:
+                    des_index = self.moves.index([x,y])
+                    destination = self.moves[des_index]
+                    self.validate_move(destination)
+                except:
+                    pass
+
+            # checkmate mechanism
+            else:
+                # reset moves
+                self.moves = []
+
+
+    def get_selected_square(self):
         # get mouse event
         ret, mouse_event = self.utils.get_mouse_event()
 
@@ -307,7 +375,6 @@ class Chess(object):
                             try:
                                 l = None
                                 l = self.board_locations[k].index(selected)
-
                                 if l != None:
                                     #reset color of all selected pieces
                                     for val in self.piece_location.values():
@@ -321,29 +388,12 @@ class Chess(object):
                                     rowNo = 8 - l
                                     
                                     piece_name = self.piece_location[columnChar][rowNo][0]
-                                    piece_color = piece_name[:5]
                                     
-                                    # only the player with the turn gets to play
-                                    if(piece_color == turn):
-                                        # change selection flag
-                                        self.piece_location[columnChar][rowNo][1] = True
-                                        # get x, y coordinates
-                                        x, y = self.piece_location[columnChar][rowNo][2]
-                                        # find possible moves
-                                        self.moves = self.possible_moves(piece_name, [x,y])
-                                    else:
-                                        #self.moves = []
-                                        pass
-
-                                    try:
-                                        des_index = self.moves.index([k,l])
-                                        destination = self.moves[des_index]
-                                        #print("destination", destination)
-                                        self.validate_move(destination)
-                                    except:
-                                        pass
+                                    return [piece_name, columnChar, rowNo]
                             except:
                                 pass
+        else:
+            return None
 
 
     def validate_move(self, destination):
@@ -352,9 +402,9 @@ class Chess(object):
 
         for k in self.piece_location.keys():
             for key in self.piece_location[k].keys():
-                selected = self.piece_location[k][key][1]
+                board_piece = self.piece_location[k][key]
 
-                if selected:
+                if board_piece[1]:
                     # unselect the source piece
                     self.piece_location[k][key][1] = False
                     # get the name of the source piece
@@ -371,7 +421,9 @@ class Chess(object):
                         self.turn["black"] = 1
                         self.turn["white"] = 0
 
-        print("Destination", desColChar, desRowNo)
+        src_location = k + str(key)
+        des_location = desColChar + str(desRowNo)
+        print("{} moved from {} to {}".format(board_piece[0],  src_location, des_location))
 
 
     # helper function to find diagonal moves
@@ -455,18 +507,3 @@ class Chess(object):
 
         return positions
 
-
-# fix bug
-# remove positions that have been occupied by other pieces
-"""
-for item in self.piece_location.values():
-    for value in item.values():
-        # if the selected piece is for the current player
-        #if(value[0][:5] == piece_name[:5]):
-        print("to remove", value[2])
-        try:
-            positions.remove((value[2][0], value[2][1]))
-        except:
-            pass
-#print("after", positions)
-"""
