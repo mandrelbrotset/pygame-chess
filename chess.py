@@ -121,15 +121,9 @@ class Chess(object):
         # let player with black piece play
         if(self.turn["black"]):
             self.move_piece("black")
-            # give up turn to player with white piece
-            #self.turn["black"] = 0
-            #self.turn["white"] = 1
         # let player with white piece play
         elif(self.turn["white"]):
             self.move_piece("white")
-            # give up turn to player with black piece
-            #self.turn["black"] = 1
-            #self.turn["white"] = 0
 
     # method to draw pieces on the chess board
     def draw_pieces(self):
@@ -200,20 +194,36 @@ class Chess(object):
             
             # calculate moves for pawn
             elif piece_name[6:] == "pawn":
+                # convert list index to dictionary key
+                columnChar = chr(97 + x_coord)
+                rowNo = 8 - y_coord
+
                 # calculate moves for white pawn
                 if piece_name[:5] == "black":
                     if y_coord + 1 < 8:
-                        positions.append([x_coord, y_coord+1])
-                        # black pawns can move two positions ahead for first move
-                        if y_coord < 2:
-                            positions.append([x_coord, y_coord+2])
+                        # get row in front of black pawn
+                        rowNo = rowNo - 1
+                        front_piece = self.piece_location[columnChar][rowNo][0]
+                
+                        # pawns cannot move when blocked by another another pawn
+                        if(front_piece[6:] != "pawn"):
+                            positions.append([x_coord, y_coord+1])
+                            # black pawns can move two positions ahead for first move
+                            if y_coord < 2:
+                                positions.append([x_coord, y_coord+2])
                 # calculate moves for white pawn
                 elif piece_name[:5] == "white":
                     if y_coord - 1 >= 0:
-                        positions.append([x_coord, y_coord-1])
-                        # black pawns can move two positions ahead for first move
-                        if y_coord > 5:
-                            positions.append([x_coord, y_coord-2])
+                        # get row in front of black pawn
+                        rowNo = rowNo + 1
+                        front_piece = self.piece_location[columnChar][rowNo][0]
+
+                        # pawns cannot move when blocked by another another pawn
+                        if(front_piece[6:] != "pawn"):
+                            positions.append([x_coord, y_coord-1])
+                            # black pawns can move two positions ahead for first move
+                            if y_coord > 5:
+                                positions.append([x_coord, y_coord-2])
 
             # calculate moves for rook
             elif piece_name[6:] == "rook":
