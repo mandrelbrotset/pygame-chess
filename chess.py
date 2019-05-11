@@ -285,38 +285,32 @@ class Chess(object):
                 # find linear moves
                 positions = self.linear_moves(positions, piece_coord)
 
+            # list of positions to be removed
+            to_remove = []
 
-            
-            count = 0
-            # remove positions that overlap other pieces
+            # remove positions that overlap other pieces of the current player
             for pos in positions:
                 x, y = pos
 
-                # bug here!! Temporary solution
-                # four conditions because possible moves can be out of board range
-                # i.e. > 7 or < 0
-                #if(x >= 0 and x < 8 and y >= 0 and y < 8):
-                count = count + 1
-                print(count)
-
+                # convert list index to dictionary key
                 columnChar = chr(97 + x)
                 rowNo = 8 - y
 
+                # find the pieces to remove
                 des_piece_name = self.piece_location[columnChar][rowNo][0]
+                if(des_piece_name[:5] == piece_name[:5]):
+                    to_remove.append(pos)
 
-                # remove possible moves that overlap pieces of the current player 
-                if(piece_name[:5] == des_piece_name[:5]):
-                    print(pos)
-                    positions.remove(pos)
+            # remove position from positions list
+            for i in to_remove:
+                positions.remove(i)
 
-
-        print(positions)
         # return list containing possible moves for the selected piece
         return positions
 
 
     def move_piece(self, turn):
-        #
+        # get the coordinates of the square selected on the board
         square = self.get_selected_square()
 
         # if a square was selected
