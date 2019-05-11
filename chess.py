@@ -40,6 +40,9 @@ class Chess(object):
             "black_queen":  7
         }
 
+        # list containing captured pieces
+        self.captured = []
+
         self.reset()
     
     def reset(self):
@@ -199,7 +202,7 @@ class Chess(object):
                 rowNo = 8 - y_coord
 
                 # calculate moves for white pawn
-                if piece_name[:5] == "black":
+                if piece_name == "black_pawn":
                     if y_coord + 1 < 8:
                         # get row in front of black pawn
                         rowNo = rowNo - 1
@@ -211,8 +214,36 @@ class Chess(object):
                             # black pawns can move two positions ahead for first move
                             if y_coord < 2:
                                 positions.append([x_coord, y_coord+2])
+
+                        # EM PASSANT
+                        # diagonal to the left
+                        if x_coord - 1 >= 0 and y_coord + 1 < 8:
+                            x = x_coord - 1
+                            y = y_coord + 1
+                            
+                            # convert list index to dictionary key
+                            columnChar = chr(97 + x)
+                            rowNo = 8 - y
+                            to_capture = self.piece_location[columnChar][rowNo]
+
+                            if(to_capture[0][:5] == "white"):
+                                positions.append([x, y])
+                        
+                        # diagonal to the right
+                        if x_coord + 1 < 8  and y_coord + 1 < 8:
+                            x = x_coord + 1
+                            y = y_coord + 1
+
+                            # convert list index to dictionary key
+                            columnChar = chr(97 + x)
+                            rowNo = 8 - y
+                            to_capture = self.piece_location[columnChar][rowNo]
+
+                            if(to_capture[0][:5] == "white"):
+                                positions.append([x, y])
+                        
                 # calculate moves for white pawn
-                elif piece_name[:5] == "white":
+                elif piece_name == "white_pawn":
                     if y_coord - 1 >= 0:
                         # get row in front of black pawn
                         rowNo = rowNo + 1
@@ -224,6 +255,35 @@ class Chess(object):
                             # black pawns can move two positions ahead for first move
                             if y_coord > 5:
                                 positions.append([x_coord, y_coord-2])
+
+                        # EM PASSANT
+                        # diagonal to the left
+                        if x_coord - 1 >= 0 and y_coord - 1 >= 0:
+                            x = x_coord - 1
+                            y = y_coord - 1
+                            
+                            # convert list index to dictionary key
+                            columnChar = chr(97 + x)
+                            rowNo = 8 - y
+                            to_capture = self.piece_location[columnChar][rowNo]
+
+                            if(to_capture[0][:5] == "black"):
+                                positions.append([x, y])
+
+                            
+                        # diagonal to the right
+                        if x_coord + 1 < 8  and y_coord - 1 >= 0:
+                            x = x_coord + 1
+                            y = y_coord - 1
+
+                            # convert list index to dictionary key
+                            columnChar = chr(97 + x)
+                            rowNo = 8 - y
+                            to_capture = self.piece_location[columnChar][rowNo]
+
+                            if(to_capture[0][:5] == "black"):
+                                positions.append([x, y])
+
 
             # calculate moves for rook
             elif piece_name[6:] == "rook":
@@ -423,9 +483,12 @@ class Chess(object):
                     piece_name = self.piece_location[k][key][0]
                     # move the source piece to the destination piece
                     self.piece_location[desColChar][desRowNo][0] = piece_name
+                    
+                    src_name = self.piece_location[k][key][0]
                     # remove source piece from its current position
                     self.piece_location[k][key][0] = ""
 
+                    # change turn
                     if(self.turn["black"]):
                         self.turn["black"] = 0
                         self.turn["white"] = 1
@@ -433,9 +496,9 @@ class Chess(object):
                         self.turn["black"] = 1
                         self.turn["white"] = 0
 
-        src_location = k + str(key)
-        des_location = desColChar + str(desRowNo)
-        print("{} moved from {} to {}".format(board_piece[0],  src_location, des_location))
+                    src_location = k + str(key)
+                    des_location = desColChar + str(desRowNo)
+                    print("{} moved from {} to {}".format(src_name,  src_location, des_location))
 
 
     # helper function to find diagonal moves
