@@ -407,11 +407,17 @@ class Chess(object):
             # checkmate mechanism
             p = self.piece_location[columnChar][rowNo]
 
+            # 
             for i in self.moves:
+                # if selected square is a valid move
                 if i == [x, y]:
+                    # if selected square is not occupied by any piece
                     if(p[0][:5] == turn) or len(p[0]) == 0:
+                        # move piece
                         self.validate_move([x,y])
+                    # if piece selected is the opponents piece
                     else:
+                        # capture piece
                         self.capture_piece(turn, [columnChar, rowNo], [x,y])
 
             # only the player with the turn gets to play

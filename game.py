@@ -5,6 +5,8 @@ from piece import Piece
 from chess import Chess
 from utils import Utils
 
+from threading import Thread
+
 class Game:
     def __init__(self):
         # screen dimensions
@@ -75,6 +77,9 @@ class Game:
         # create class object that handles the gameplay logic
         self.chess = Chess(self.screen, pieces_src, self.board_locations, square_length)
 
+        t = Thread(target=self.draw, daemon=True)
+        thread_started = False
+
         # game loop
         while self.running:
             self.clock.tick(60)
@@ -89,19 +94,23 @@ class Game:
                 elif key_pressed[K_SPACE]:
                     self.chess.reset()
             
-            #if self.menu_showed == False:
-            #    self.menu()
-            #else:
-            #    self.game()
+            if self.menu_showed == False:
+                self.menu()
+            else:
+                self.game()
+                if not thread_started:
+                    t.start()
+                    thread_started = True
 
             # for testing
             # mechanics of the game
-            self.game()
+            #self.game()
 
             # update display
             pygame.display.flip()
             # update events
             pygame.event.pump()
+        t.join()
 
         # call method to stop pygame
         pygame.quit()
@@ -142,15 +151,17 @@ class Game:
         key_pressed = pygame.key.get_pressed()
         # 
         util = Utils()
-        # call function to get mouse event
-        ret, mouse_coords = util.get_mouse_event()
 
-        # check if "Play" button was clicked
-        if start_btn.collidepoint(mouse_coords[0], mouse_coords[1]):
-            # change button behavior as it is hovered
-            pygame.draw.rect(self.screen, white_color, start_btn, 3)
-            # check if left mouse button was clicked
-            if ret:
+        # check if left mouse button was clicked
+        if util.left_click():
+            # call function to get mouse event
+            mouse_coords = util.get_mouse_event()
+
+            # check if "Play" button was clicked
+            if start_btn.collidepoint(mouse_coords[0], mouse_coords[1]):
+                # change button behavior as it is hovered
+                pygame.draw.rect(self.screen, white_color, start_btn, 3)
+        
                 # change menu flag
                 self.menu_showed = True
         # check if enter or return key was pressed
@@ -169,4 +180,9 @@ class Game:
         # call self.chess. something
         self.chess.play_turn()
         # draw pieces on the chess board
-        self.chess.draw_pieces()
+        #self.chess.draw_pieces()
+
+    def draw(self):
+        while self.running:
+            # draw pieces on the chess board
+            self.chess.draw_pieces()
