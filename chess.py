@@ -5,6 +5,8 @@ import random
 from piece import Piece
 from utils import Utils
 
+import time
+
 class Chess(object):
     def __init__(self, screen, pieces_src, square_coords, square_length):
         # display surface
@@ -398,9 +400,19 @@ class Chess(object):
             x, y = self.piece_location[columnChar][rowNo][2]
 
             # if there's a piece on the selected square
-            if len(piece_name) > 0:
+            if(len(piece_name) > 0) and (piece_color == turn):
                 # find possible moves for thr piece
                 self.moves = self.possible_moves(piece_name, [x,y])
+
+            # checkmate mechanism
+            p = self.piece_location[columnChar][rowNo]
+
+            for i in self.moves:
+                if i == [x, y]:
+                    if(p[0][:5] == turn) or len(p[0]) == 0:
+                        self.validate_move([x,y])
+                    else:
+                        self.capture_piece(turn, [columnChar, rowNo], [x,y])
 
             # only the player with the turn gets to play
             if(piece_color == turn):
@@ -411,29 +423,14 @@ class Chess(object):
 
                 # change selection flag of the selected piece
                 self.piece_location[columnChar][rowNo][1] = True
-
-            # if empty square is selected
-            elif(len(piece_name) == 0):
-                # move piece if destination is in list of possible moves
-                try:
-                    des_index = self.moves.index([x,y])
-                    destination = self.moves[des_index]
-                    self.validate_move(destination)
-                except:
-                    pass
-
-            # checkmate mechanism
-            else:
-                # reset moves
-                self.moves = []
-
-
+                
+            
     def get_selected_square(self):
         # get mouse event
-        ret, mouse_event = self.utils.get_mouse_event()
+        mouse_event = self.utils.get_mouse_event()
 
-        # if mouse mouse button was pressed
-        if ret:
+        # if there's a mouse event
+        if mouse_event:
             for i in range(len(self.board_locations)):
                 for j in range(len(self.board_locations)):
                     rect = pygame.Rect(self.board_locations[i][j][0], self.board_locations[i][j][1], 
@@ -455,10 +452,10 @@ class Chess(object):
                                             if not value[1]:
                                                 value[1] = False
 
-                                    # change color of the selected piece and show possible moves
+                                    # get column character and row number of the chess piece
                                     columnChar = chr(97 + k)
                                     rowNo = 8 - l
-                                    
+                                    # get the name of the 
                                     piece_name = self.piece_location[columnChar][rowNo][0]
                                     
                                     return [piece_name, columnChar, rowNo]
@@ -466,6 +463,20 @@ class Chess(object):
                                 pass
         else:
             return None
+
+
+    def capture_piece(self, turn, chess_board_coord, piece_coord):
+        # get x, y coordinate of the destination piece
+        x, y = piece_coord
+
+        # get chess board coordinate
+        columnChar, rowNo = chess_board_coord
+
+        p = self.piece_location[columnChar][rowNo]
+        # add the captured piece to list
+        self.captured.append(p)
+        # move source piece to its destination
+        self.validate_move(piece_coord)
 
 
     def validate_move(self, destination):
