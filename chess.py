@@ -193,7 +193,7 @@ class Chess(object):
             x_coord, y_coord = piece_coord
             # calculate moves for bishop
             if piece_name[6:] == "bishop":
-                positions = self.diagonal_moves(positions, piece_coord)
+                positions = self.diagonal_moves(positions, piece_name, piece_coord)
             
             # calculate moves for pawn
             elif piece_name[6:] == "pawn":
@@ -288,7 +288,7 @@ class Chess(object):
             # calculate moves for rook
             elif piece_name[6:] == "rook":
                 # find linear moves
-                positions = self.linear_moves(positions, piece_coord)
+                positions = self.linear_moves(positions, piece_name, piece_coord)
 
             # calculate moves for knight
             elif piece_name[6:] == "knight":
@@ -350,10 +350,10 @@ class Chess(object):
             # calculate movs for queen
             elif piece_name[6:] == "queen":
                 # find diagonal positions
-                positions = self.diagonal_moves(positions, piece_coord)
+                positions = self.diagonal_moves(positions, piece_name, piece_coord)
 
                 # find linear moves
-                positions = self.linear_moves(positions, piece_coord)
+                positions = self.linear_moves(positions, piece_name, piece_coord)
 
             # list of positions to be removed
             to_remove = []
@@ -502,7 +502,7 @@ class Chess(object):
 
 
     # helper function to find diagonal moves
-    def diagonal_moves(self, positions, piece_coord):
+    def diagonal_moves(self, positions, piece_name, piece_coord):
         # reset x and y coordinate values
         x, y = piece_coord
         # find top left diagonal spots
@@ -513,6 +513,15 @@ class Chess(object):
                 break
             else:
                 positions.append([x,y])
+
+            # convert list index to dictionary key
+            columnChar = chr(97 + x)
+            rowNo = 8 - y
+            p = self.piece_location[columnChar][rowNo]
+
+            # stop finding possible moves if blocked by a piece
+            if len(p[0]) > 0 and piece_name[:5] != p[:5]:
+                break
 
         # reset x and y coordinate values
         x, y = piece_coord
@@ -525,6 +534,15 @@ class Chess(object):
             else:
                 positions.append([x,y])
 
+            # convert list index to dictionary key
+            columnChar = chr(97 + x)
+            rowNo = 8 - y
+            p = self.piece_location[columnChar][rowNo]
+
+            # stop finding possible moves if blocked by a piece
+            if len(p[0]) > 0 and piece_name[:5] != p[:5]:
+                break
+
         # reset x and y coordinate values
         x, y = piece_coord
         # find bottom left diagonal spots
@@ -535,6 +553,15 @@ class Chess(object):
                 break
             else:
                 positions.append([x,y])
+
+            # convert list index to dictionary key
+            columnChar = chr(97 + x)
+            rowNo = 8 - y
+            p = self.piece_location[columnChar][rowNo]
+
+            # stop finding possible moves if blocked by a piece
+            if len(p[0]) > 0 and piece_name[:5] != p[:5]:
+                break
 
         # reset x and y coordinate values
         x, y = piece_coord
@@ -547,17 +574,36 @@ class Chess(object):
             else:
                 positions.append([x,y])
 
+            # convert list index to dictionary key
+            columnChar = chr(97 + x)
+            rowNo = 8 - y
+            p = self.piece_location[columnChar][rowNo]
+
+            # stop finding possible moves if blocked by a piece
+            if len(p[0]) > 0 and piece_name[:5] != p[:5]:
+                break
+
         return positions
     
 
     # helper function to find horizontal and vertical moves
-    def linear_moves(self, positions, piece_coord):
+    def linear_moves(self, positions, piece_name, piece_coord):
         # reset x, y coordniate value
         x, y = piece_coord
         # horizontal moves to the left
         while(x > 0):
             x = x - 1
             positions.append([x,y])
+
+            # convert list index to dictionary key
+            columnChar = chr(97 + x)
+            rowNo = 8 - y
+            p = self.piece_location[columnChar][rowNo]
+
+            # stop finding possible moves if blocked by a piece
+            if len(p[0]) > 0 and piece_name[:5] != p[:5]:
+                break
+                    
 
         # reset x, y coordniate value
         x, y = piece_coord
@@ -566,12 +612,30 @@ class Chess(object):
             x = x + 1
             positions.append([x,y])
 
+            # convert list index to dictionary key
+            columnChar = chr(97 + x)
+            rowNo = 8 - y
+            p = self.piece_location[columnChar][rowNo]
+
+            # stop finding possible moves if blocked by a piece
+            if len(p[0]) > 0 and piece_name[:5] != p[:5]:
+                break    
+
         # reset x, y coordniate value
         x, y = piece_coord
         # vertical moves upwards
         while(y > 0):
             y = y - 1
             positions.append([x,y])
+
+            # convert list index to dictionary key
+            columnChar = chr(97 + x)
+            rowNo = 8 - y
+            p = self.piece_location[columnChar][rowNo]
+
+            # stop finding possible moves if blocked by a piece
+            if len(p[0]) > 0 and piece_name[:5] != p[:5]:
+                break
 
         # reset x, y coordniate value
         x, y = piece_coord
@@ -580,5 +644,14 @@ class Chess(object):
             y = y + 1
             positions.append([x,y])
 
-        return positions
+            # convert list index to dictionary key
+            columnChar = chr(97 + x)
+            rowNo = 8 - y
+            p = self.piece_location[columnChar][rowNo]
 
+            # stop finding possible moves if blocked by a piece
+            if len(p[0]) > 0 and piece_name[:5] != p[:5]:
+                break
+
+
+        return positions
