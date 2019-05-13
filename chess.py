@@ -44,6 +44,8 @@ class Chess(object):
 
         # list containing captured pieces
         self.captured = []
+        #
+        self.winner = ""
 
         self.reset()
     
@@ -426,11 +428,14 @@ class Chess(object):
                 
             
     def get_selected_square(self):
-        # get mouse event
-        mouse_event = self.utils.get_mouse_event()
+        # get left event
+        left_click = self.utils.left_click_event()
 
         # if there's a mouse event
-        if mouse_event:
+        if left_click:
+            # get mouse event
+            mouse_event = self.utils.get_mouse_event()
+
             for i in range(len(self.board_locations)):
                 for j in range(len(self.board_locations)):
                     rect = pygame.Rect(self.board_locations[i][j][0], self.board_locations[i][j][1], 
@@ -473,6 +478,14 @@ class Chess(object):
         columnChar, rowNo = chess_board_coord
 
         p = self.piece_location[columnChar][rowNo]
+        
+        if p[0] == "white_king":
+            self.winner = "Black"
+            print("Black wins")
+        elif p[0] == "black_king":
+            self.winner = "White"
+            print("White wins")
+
         # add the captured piece to list
         self.captured.append(p)
         # move source piece to its destination
